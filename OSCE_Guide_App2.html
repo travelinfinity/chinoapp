@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NextGen Nurses Academy | AHPRA RN OSCE Interactive LMS & Case Simulator</title>
+<style>
+  :root {
+    --brand-dark: #06283d;
+    --brand-primary: #0a4d68;
+    --brand-secondary: #088395;
+    --brand-accent: #05bfdb;
+    --bg-main: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --border: #cbd5e1;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #d97706;
+  }
+
+  * {
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg-main);
+    color: var(--text-dark);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* TOP NAVIGATION BAR */
+  .top-nav {
+    height: 68px;
+    background: var(--brand-dark);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    flex-shrink: 0;
+  }
+
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 18px;
+  }
+
+  .brand-badge {
+    background: var(--brand-accent);
+    color: #002b36;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .osce-timer-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.08);
+    padding: 6px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .timer-display {
+    font-family: monospace;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--brand-accent);
+    min-width: 65px;
+    text-align: center;
+  }
+
+  .timer-btn {
+    background: var(--brand-secondary);
+    color: white;
+    border: none;
+    padding: 6px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 12px;
+    transition: 0.15s;
+  }
+
+  .timer-btn:hover {
+    background: var(--brand-accent);
+    color: #002b36;
+  }
+
+  /* MAIN LMS LAYOUT */
+  .lms-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* LEFT CURRICULUM SIDEBAR */
+  .sidebar {
+    width: 350px;
+    background: white;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  .progress-box {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--brand-primary);
+  }
+
+  .progress-bar-bg {
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brand-secondary), var(--brand-accent));
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .curriculum-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 30px;
+  }
+
+  .module-header {
+    padding: 11px 18px;
+    background: #f1f5f9;
+    font-size: 11.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+  }
+
+  .lesson-item {
+    padding: 13px 18px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 13.5px;
+    transition: background 0.15s;
+  }
+
+  .lesson-item:hover {
+    background: #f0f9ff;
+  }
+
+  .lesson-item.active {
+    background: #e0f2fe;
+    border-left: 4px solid var(--brand-secondary);
+    font-weight: 700;
+    color: var(--brand-primary);
+  }
+
+  .status-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    color: transparent;
+  }
+
+  .lesson-item.completed .status-dot {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+  }
+
+  /* RIGHT CONTENT STAGE */
+  .stage {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 40px;
+  }
+
+  .stage-container {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .video-banner {
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand-primary));
+    border-radius: 14px;
+    padding: 24px 30px;
+    color: white;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px rgba(10,77,104,0.14);
+  }
+
+  .video-banner h1 {
+    margin: 8px 0;
+    font-size: 24px;
+  }
+
+  .video-banner p {
+    margin: 0;
+    opacity: 0.92;
+    font-size: 14px;
+  }
+
+  /* LESSON TABS */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 11px 18px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+
+  .tab-btn.active {
+    color: var(--brand-primary);
+    border-bottom-color: var(--brand-secondary);
+    background: #f8fafc;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .tab-btn.scenario-tab-btn {
+    color: #b45309;
+  }
+
+  .tab-btn.scenario-tab-btn.active {
+    color: #b45309;
+    border-bottom-color: #f59e0b;
+    background: #fffbeb;
+  }
+
+  .tab-panel {
+    display: none;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  /* CARDS & CLINICAL COMPONENTS */
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 22px 26px;
+    border: 1px solid var(--border);
+    margin-bottom: 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
+
+  .card h3 {
+    margin-top: 0;
+    color: var(--brand-primary);
+    font-size: 18px;
+  }
+
+  .door-sheet {
+    background: #fffbeb;
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 18px;
+  }
+
+  .door-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px dashed #f59e0b;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    font-weight: 800;
+    color: #92400e;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+
+  .twist-box {
+    background: #fff1f2;
+    border: 2px solid #f43f5e;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+  }
+
+  .twist-box h4 {
+    margin: 0 0 6px 0;
+    color: #be123c;
+    font-size: 15px;
+  }
+
+  .student-textarea {
+    width: 100%;
+    min-height: 125px;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 8px;
+    resize: vertical;
+  }
+
+  .student-textarea:focus {
+    outline: none;
+    border-color: var(--brand-secondary);
+    background: #f8fafc;
+  }
+
+  .reveal-btn {
+    background: var(--brand-primary);
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .reveal-btn:hover {
+    background: var(--brand-secondary);
+  }
+
+  .marking-key {
+    display: none;
+    margin-top: 18px;
+    border-top: 2px solid var(--border);
+    padding-top: 18px;
+  }
+
+  .script-box {
+    background: #eef6ff;
+    border-left: 5px solid var(--brand-primary);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-style: italic;
+  }
+
+  .script-box strong {
+    font-style: normal;
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--brand-primary);
+    margin-bottom: 4px;
+  }
+
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .checklist li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .checklist input[type="checkbox"] {
+    margin-top: 4px;
+    transform: scale(1.25);
+    accent-color: var(--brand-secondary);
+    cursor: pointer;
+  }
+
+  .fill-input {
+    border: none;
+    border-bottom: 2px solid var(--brand-secondary);
+    background: #f0f9ff;
+    padding: 3px 8px;
+    font-weight: 700;
+    color: var(--brand-primary);
+    min-width: 120px;
+  }
+
+  .fill-input.sm {
+    min-width: 55px;
+    width: 65px;
+    text-align: center;
+  }
+
+  .quiz-option {
+    display: block;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .quiz-option:hover {
+    border-color: var(--brand-secondary);
+    background: #f8fafc;
+  }
+
+  .quiz-feedback {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-weight: 600;
+    display: none;
+  }
+
+  .lesson-nav-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border);
+  }
+
+  .nav-btn {
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text-dark);
+  }
+
+  .nav-btn.complete-btn {
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 13px 26px;
+  }
+</style>
+</head>
+<body>
+
+<header class="top-nav">
+  <div class="brand-logo">
+    <span>🩺 NEXTGEN NURSES ACADEMY</span>
+    <span class="brand-badge">OSCE Simulator v2.0</span>
+  </div>
+  <div class="osce-timer-bar">
+    <span style="font-size:13px;font-weight:700;">⏱️ Station Timer:</span>
+    <span class="timer-display" id="timerDisplay">08:00</span>
+    <button class="timer-btn" onclick="toggleTimer()" id="timerToggleBtn">▶ Start</button>
+    <button class="timer-btn" onclick="setTimerMode(120)">2m Read</button>
+    <button class="timer-btn" onclick="setTimerMode(480)">8m Exam</button>
+  </div>
+</header>
+
+<div class="lms-body">
+  <aside class="sidebar">
+    <div class="progress-box">
+      <div class="progress-header">
+        <span>Course & Case Mastery</span>
+        <span id="progressText">0% Completed</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+    </div>
+    <div class="curriculum-list" id="curriculumList"></div>
+  </aside>
+
+  <main class="stage">
+    <div class="stage-container" id="lessonStage"></div>
+  </main>
+</div>
+
+<script>
+const courseData = [
+  {
+    module: "Module 1: Universal OSCE Foundations",
+    lessons: [
+      {
+        id: "m1-l1",
+        title: "Universal OSCE Approach: SAFE & HIIAECP Start",
+        type: "Foundation",
+        summary: "Master the universal sequence used at every single station to start safely, verify 3 identifiers, and close with documentation and escalation.",
+        notesHtml: `
+          <div class="card">
+            <h3>Before Touching the Patient (SAFE & H-I-I-A-E-C-P)</h3>
+            <ul class="checklist">
+              <li><input type="checkbox"> <span><strong>S – Scan:</strong> Read scenario carefully, identify the task, check for immediate danger or patient deterioration, and check allergies/chart.</span></li>
+              <li><input type="checkbox"> <span><strong>A – Approach:</strong> Perform visible hand hygiene (ABHR). Introduce yourself and your role. Provide privacy and dignity.</span></li>
+              <li><input type="checkbox"> <span><strong>F – Full Identification:</strong> Confirm 3 approved patient identifiers (Full Name, Date of Birth, and UR/MRN) against the wristband and chart.</span></li>
+              <li><input type="checkbox"> <span><strong>E – Explain & Consent:</strong> Explain the procedure in plain language, obtain consent, and ask about immediate pain or discomfort.</span></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>During & At Closure</h3>
+            <p><strong>During:</strong> Work systematically, maintain infection control, communicate with the patient, and <strong>interpret abnormal findings aloud</strong> (OBSERVE → INTERPRET → ESCALATE → REASSESS).</p>
+            <p><strong>Closure:</strong> Reassess the patient, ensure bed is low with brakes locked and call bell in reach, perform hand hygiene, document, and deliver an ISBAR handover.</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 0: The First 90 Seconds & Accidental Contamination Recovery",
+          patient: "Mrs Evelyn Harper | DOB: 14/05/1952 (74 yrs) | UR: 449102 | Allergies: Penicillin (Anaphylaxis)",
+          setting: "Surgical Ward – Bed 2",
+          doorPrompt: "You are entering Mrs Evelyn Harper's room to perform a routine post-operative assessment. Halfway through introducing yourself, you accidentally drop your pen and stethoscope onto the floor, pick them up, and are about to touch the patient's radial pulse.",
+          twist: "Examiner watches closely to see if you notice the infection-control breach AND whether you check her red allergy wristband.",
+          rubric: [
+            "Performs visible Hand Hygiene upon entering the room before touching curtains or equipment.",
+            "Scans the room for environmental hazards and patient distress.",
+            "Introduces full name and Registered Nurse role clearly.",
+            "Closes privacy curtain and explains purpose of visit.",
+            "Asks patient to state Full Name and Date of Birth, and cross-checks against UR/MRN (449102) on ID wristband.",
+            "Identifies red allergy wristband and asks patient to confirm allergy and reaction (Penicillin – Anaphylaxis).",
+            "Asks about baseline pain or immediate discomfort and obtains verbal consent.",
+            "CRITICAL RECOVERY: Immediately pauses after touching the floor/dropped equipment and verbalises the error-recovery phrase.",
+            "Performs hand hygiene again and cleans stethoscope with alcohol wipe before touching the patient.",
+            "Closes safely with bed low, brakes locked, call bell in reach, and hand hygiene."
+          ],
+          modelScript: "“I recognise that touching the floor/dropped item would compromise infection control and patient safety. I would stop immediately, perform hand hygiene, clean my equipment with an alcohol swab, and proceed safely.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Universal Entry & Error-Recovery Scripts</h3>
+            <div class="script-box">
+              <strong>When You Make an Error During Any Station (Don't Panic!):</strong>
+              “I recognise that this would compromise patient safety. I would stop, correct the issue and proceed safely.”
+            </div>
+            <div class="script-box">
+              <strong>Universal Closing Script:</strong>
+              “Mr/Ms <input class="fill-input sm">, I have completed your <input class="fill-input">. Is there anything else you need at the moment? I will ensure your bed is in a safe position and your call bell and personal belongings are within reach. I would perform hand hygiene, document my findings, and escalate any abnormalities.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "What are the three approved patient identifiers you must verify at the start of every station?",
+          options: [
+            "Bed number, doctor's name, and diet type",
+            "Full name, date of birth, and UR/MRN number cross-checked against the ID wristband and chart",
+            "First name only",
+            "Room number and diagnosis"
+          ],
+          correct: 1,
+          explanation: "Correct! Always verify Full Name, DOB, and UR/MRN verbally and visually against the patient's wristband and documentation."
+        }
+      }
+    ]
+  },
+  {
+    module: "Module 2: Acute & Deteriorating Patient Stations (1, 2, 6, 8)",
+    lessons: [
+      {
+        id: "m2-s1",
+        title: "Station 1: Vital Signs and Pain Assessment",
+        type: "Station 1",
+        summary: "Accurately assess all 7 core observations, interpret abnormal trends, and respond to acute chest pain deterioration.",
+        notesHtml: `
+          <div class="card">
+            <h3>Core Observations (1 to 7)</h3>
+            <ul class="checklist">
+              <li><input type="checkbox"> <span><strong>1. Respiratory rate:</strong> Count discreetly for 60s. Assess Rate, Rhythm, Depth, WOB, Accessory muscles, Speech, Skin colour.</span></li>
+              <li><input type="checkbox"> <span><strong>2. Oxygen saturation:</strong> Check SpO₂, O₂ therapy device & flow rate vs target range.</span></li>
+              <li><input type="checkbox"> <span><strong>3. Heart rate:</strong> Palpate manually for Rate, Rhythm (regular/irregular), and Strength.</span></li>
+              <li><input type="checkbox"> <span><strong>4. Blood pressure:</strong> Correct cuff size, arm supported at heart level, compare with baseline.</span></li>
+              <li><input type="checkbox"> <span><strong>5. Temperature & 6. Consciousness (AVPU/GCS):</strong> Check fever/hypothermia & alertness.</span></li>
+              <li><input type="checkbox"> <span><strong>7. Pain (PQRST):</strong> Screen for pain and red flags.</span></li>
+            </ul>
+          </div>
+        `,
+        scenario: {
+          title: "Case 1: Post-Op Observations with Acute Crushing Chest Pain",
+          patient: "Mr Arthur Pendelton | DOB: 03/11/1958 (67 yrs) | UR: 882310 | Allergies: Nil Known",
+          setting: "Orthopaedic Ward – Day 1 post Right Total Knee Replacement",
+          doorPrompt: "You are asked to perform a routine set of observations on Mr Arthur Pendelton. His baseline BP this morning was 135/80 mmHg and HR 76 bpm.",
+          twist: "When you ask about pain, Mr Pendelton clutches his sternum and states: 'Actually nurse, over the last 10 minutes I've developed a heavy crushing pain right in the middle of my chest (8/10) going down my left arm, and I feel sweaty and short of breath.' Current Obs: RR 26/min, SpO₂ 91% on RA, HR 118 bpm irregular, BP 92/58 mmHg, Temp 36.8°C, Alert.",
+          rubric: [
+            "Completes SAFE entry: Hand hygiene, introduction, 3 patient identifiers (Name, DOB, UR 882310), allergy check, and consent.",
+            "Assesses general appearance, skin colour (pale/diaphoretic), consciousness (Alert), and work of breathing.",
+            "Counts Respiratory Rate (26/min) and verbalises that tachypnoea is outside the expected range.",
+            "Checks SpO₂ (91% on RA), manual radial pulse (118 bpm, irregular, weak), and BP (92/58 mmHg – hypotensive compared to 135/80 baseline).",
+            "Performs targeted PQRST pain assessment including cardiac red-flag symptoms (left arm radiation, diaphoresis, dyspnoea).",
+            "CRITICAL ACTION: Recognises acute cardiac deterioration / life-threatening chest pain red flag and stops routine non-urgent tasks.",
+            "Verbalises staying with the patient and calling for immediate assistance.",
+            "Initiates immediate ABCDE assessment and states they would request an urgent 12-lead ECG.",
+            "Activates the facility's clinical deterioration / MET / emergency response pathway immediately.",
+            "Documents observations and PQRST assessment accurately on the observation chart."
+          ],
+          modelScript: "“I am concerned about this patient's acute central crushing chest pain (8/10), hypotension (92/58 mmHg), and tachycardia (118 bpm). I would stop the routine assessment, remain with the patient, call for assistance, perform an immediate ABCDE assessment, and activate the clinical deterioration / MET call pathway.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 1 Interactive Observation & PQRST Sheet</h3>
+            <p>RR: <input class="fill-input sm"> /min | SpO₂: <input class="fill-input sm">% | HR: <input class="fill-input sm"> bpm | BP: <input class="fill-input sm">/<input class="fill-input sm"> mmHg | Temp: <input class="fill-input sm">°C | Pain: <input class="fill-input sm">/10</p>
+            <div class="script-box">
+              <strong>Acute Chest Pain Red Flag Script</strong>
+              “I am concerned about this patient's acute chest pain and associated symptoms. I would stop the routine assessment, remain with the patient, call for assistance, perform an immediate ABCDE assessment and activate the appropriate clinical deterioration or emergency response pathway.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "Why should you keep your fingers on the radial pulse while counting the patient's respiratory rate?",
+          options: [
+            "To measure blood pressure at the same time.",
+            "To count respirations without drawing unnecessary attention to the measurement, preventing the patient from consciously altering their breathing rate.",
+            "Because respiratory rate does not matter in the OSCE.",
+            "To check temperature."
+          ],
+          correct: 1,
+          explanation: "Correct! Patients often alter their breathing pattern if they know you are watching their chest."
+        }
+      },
+      {
+        id: "m2-s2",
+        title: "Station 2: Basic Life Support (DRSABCD)",
+        type: "Station 2",
+        summary: "Execute DRSABCD on a collapsed unresponsive patient, recognise agonal gasping as cardiac arrest, and perform safe defibrillation.",
+        notesHtml: `
+          <div class="card">
+            <h3>DRSABCD & AED Priorities</h3>
+            <p><strong>D</strong>anger → <strong>R</strong>esponse → <strong>S</strong>end for help (Code Blue / 2222 + AED + Resus Trolley) → <strong>A</strong>irway (Head-tilt/chin-lift) → <strong>B</strong>reathing (Look, listen, feel &lt;10s; agonal gasping = NOT normal breathing) → <strong>C</strong>PR (30:2, 100–120/min, depth 5–6 cm, full recoil) → <strong>D</strong>efibrillation (Stand clear, visual check, immediate CPR post-shock).</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 2: Collapsed Patient by the Bathroom Door with Agonal Gasps",
+          patient: "Mr David Miller | 62-year-old inpatient found collapsed on the floor",
+          setting: "Medical Ward – Bedside",
+          doorPrompt: "You enter the bay and find Mr David Miller lying supine beside his bed. There is a spilled cup of water next to his shoulder. Demonstrate and verbalise your immediate management.",
+          twist: "When you open his airway and check breathing, the examiner states: 'The patient is making an occasional noisy, shuddering gasp every 12 seconds.' When the AED arrives and analyses, it announces: 'Shock Advised.'",
+          rubric: [
+            "D – Danger: Identifies the spilled water hazard before approaching, clears/wipes hazard, and dons PPE.",
+            "R – Response: Checks responsiveness verbally ('Can you hear me? Open your eyes!') and tactilely (shoulder squeeze). Declares 'Patient is unresponsive.'",
+            "S – Send for help: Shouts for help, presses emergency buzzer, and delegates a responder to call Code Blue (2222) and bring the resuscitation trolley and AED.",
+            "A – Airway: Opens mouth, inspects for visible obstruction, and performs head-tilt/chin-lift.",
+            "B – Breathing: Looks, listens, and feels for normal breathing. Correctly identifies agonal gasping as NOT normal breathing (cardiac arrest).",
+            "C – CPR: Commences chest compressions immediately on the centre of the chest (lower half of sternum) at 30 compressions : 2 breaths.",
+            "Maintains compression rate of 100–120/min, depth of 5–6 cm, full chest recoil, and minimal interruptions.",
+            "D – Defibrillation: Attaches AED pads promptly without excessive interruption to CPR.",
+            "Commands 'Everyone stand clear!' during rhythm analysis and performs a 360-degree visual safety check before pressing the Shock button.",
+            "Immediately resumes chest compressions (30:2) after shock delivery without delay."
+          ],
+          modelScript: "“The patient is unresponsive and agonal gasping is not normal breathing—I will commence CPR immediately at 30 compressions to 2 breaths, rate 100–120/min, depth 5–6 cm. Shock advised—Everyone stand clear! Visually checking nobody is touching the patient. Clear! Delivering shock and immediately recommencing CPR.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 2 Verbatim Script</h3>
+            <div class="script-box">
+              “Help! I have an unresponsive patient! Please activate the emergency response, call 2222, and bring the resuscitation trolley and AED/defibrillator. The patient is unresponsive and is not breathing normally. I will commence CPR immediately.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "During your 10-second breathing check on an unresponsive patient, you observe infrequent, noisy agonal gasps. What is your immediate action?",
+          options: [
+            "Place the patient in the recovery position and wait.",
+            "Treat agonal gasping as cardiac arrest (not normal breathing) and commence CPR (30:2) immediately.",
+            "Give the patient a glass of water.",
+            "Leave the patient to document in the nurses' station."
+          ],
+          correct: 1,
+          explanation: "Correct! Agonal gasping is a brainstem reflex in cardiac arrest and is NOT normal breathing."
+        }
+      },
+      {
+        id: "m2-s6",
+        title: "Station 6: ISBAR Clinical Handover",
+        type: "Station 6",
+        summary: "Synthesise clinical deterioration data and deliver a structured, urgent telephone handover to the Medical Officer.",
+        notesHtml: `
+          <div class="card">
+            <h3>ISBAR Key Structure</h3>
+            <p><strong>I</strong>dentification → <strong>S</strong>ituation → <strong>B</strong>ackground → <strong>A</strong>ssessment (with vital sign trends) → <strong>R</strong>ecommendation (request urgent review + read-back confirmation).</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 6: Urgent Telephone Escalation for Sepsis / Respiratory Deterioration",
+          patient: "Mr John Smith | 68 yrs | Bed 4, Ward 2 | UR: 551209 | Allergies: Nil Known",
+          setting: "Nurses' Station Telephone – Calling the Medical Officer on call",
+          doorPrompt: "Mr John Smith was admitted yesterday with community-acquired pneumonia. Over the past 30 minutes he has become increasingly short of breath. His RR has risen from 18 to 30 breaths/min, SpO₂ has dropped from 95% to 89%, HR is up from 84 to 112 bpm, BP has fallen from 130/80 to 95/60 mmHg, and Temp is 38.6°C. He is alert but distressed with coarse right basal crackles. Deliver an ISBAR handover to the Medical Officer.",
+          twist: "The doctor on the phone says: 'I'm quite busy in ED right now—what exactly are his numbers and what do you want me to do?'",
+          rubric: [
+            "I – Identification: States own name, RN role, and Ward 2; identifies patient Mr John Smith, 68 years old, Bed 4, UR 551209.",
+            "S – Situation: Clearly states the urgent reason for calling (acute shortness of breath, falling SpO₂, and haemodynamic deterioration).",
+            "B – Background: Gives concise, relevant background (admitted yesterday with pneumonia, relevant history, allergies: Nil).",
+            "A – Assessment (Breathing): States RR 30/min (up from 18), SpO₂ 89% (down from 95%), distressed work of breathing, and coarse crackles.",
+            "A – Assessment (Circulation & Neuro): States HR 112 bpm, BP 95/60 mmHg (down from 130/80), Temp 38.6°C, Alert on AVPU.",
+            "Links observations to clinical interpretation (worsening pneumonia / sepsis / respiratory failure).",
+            "R – Recommendation: Clearly requests an urgent bedside medical review within a specific timeframe.",
+            "States interim nursing actions (sitting patient upright, applying oxygen per protocol, repeating 15-min observations).",
+            "States escalation safety net ('If he deteriorates further, I will activate a MET / rapid response call').",
+            "Closes the communication loop by confirming the plan with the clinician."
+          ],
+          modelScript: "“This is [Name], RN on Ward 2. I'm calling about Mr John Smith, a 68-year-old patient in Bed 4 (UR 551209). I'm concerned because he has developed increasing shortness of breath and his oxygen saturation has fallen. He was admitted yesterday with pneumonia and has no allergies. Currently his RR is 30, SpO₂ is 89%, HR is 112, BP is 95/60, and Temp is 38.6°C. He is alert but distressed. I need an urgent medical review now. While waiting, I will continue monitoring him and escalate to the rapid response team if he deteriorates further. Can I confirm the plan?”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 6 Script Builder</h3>
+            <div class="script-box">
+              “This is <input class="fill-input sm">, RN on Ward 2. I'm calling about Mr John Smith, a 68-year-old patient in bed 4. I'm concerned because he has developed increasing shortness of breath and his oxygen saturation has fallen... I need an urgent medical review.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "In the 'Assessment' section of ISBAR, why should you mention previous baseline readings alongside current observations?",
+          options: [
+            "To make the phone call last longer.",
+            "To highlight clinical trends and demonstrate interpretation of deterioration rather than just reading isolated numbers.",
+            "Because current observations are not needed.",
+            "To avoid making a recommendation."
+          ],
+          correct: 1,
+          explanation: "Correct! Highlighting trends (e.g., BP dropping from 130/80 to 95/60) proves clinical reasoning."
+        }
+      },
+      {
+        id: "m2-s8",
+        title: "Station 8: A–G Patient & Focused Respiratory Assessment",
+        type: "Station 8",
+        summary: "Conduct a systematic A–G primary survey and a focused respiratory history and chest auscultation.",
+        notesHtml: `
+          <div class="card">
+            <h3>A–G Framework & Respiratory Focus</h3>
+            <p><strong>A</strong>irway → <strong>B</strong>reathing (RR, SpO₂, WOB, chest expansion, side-to-side lung auscultation, cough/sputum) → <strong>C</strong>irculation → <strong>D</strong>isability (AVPU/GCS, pupils) → <strong>E</strong>xposure (Temp, skin, wounds) → <strong>F</strong>luids (intake/output, overload/dehydration) → <strong>G</strong>lucose (BGL).</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 8: Acute Exacerbation of COPD / Asthma with Wheeze",
+          patient: "Mrs Margaret Chen | DOB: 22/08/1960 (66 yrs) | UR: 339014 | Allergies: Aspirin",
+          setting: "Medical Assessment Unit – Bed 6",
+          doorPrompt: "Mrs Margaret Chen has pressed her call bell complaining of worsening shortness of breath over the past hour. Perform a focused respiratory and A–G assessment.",
+          twist: "On questioning, she speaks in short 3-word phrases, has a productive cough with thick yellow sputum, a history of COPD, and on chest auscultation you hear bilateral expiratory wheezes and prolonged expiration. RR 28/min, SpO₂ 86% on room air.",
+          rubric: [
+            "Completes SAFE entry: Hand hygiene, introduction, 3 patient identifiers, allergy check (Aspirin), and consent.",
+            "Takes focused subjective respiratory history: onset, sudden vs gradual, dyspnoea at rest vs exertion, chest pain screen.",
+            "Asks about cough and characterises sputum (colour, volume, consistency) and home oxygen / COPD or asthma history.",
+            "Assesses A & B objectively: airway patency, ability to speak in full sentences, skin/lip colour, accessory muscle use, and chest expansion.",
+            "Measures and interprets RR (28/min – tachypnoeic) and SpO₂ (86% on room air – hypoxic even against 88–92% COPD target).",
+            "Auscultates lung fields systematically side-to-side (anteriorly/posteriorly) and identifies bilateral expiratory wheeze.",
+            "Completes C, D, E, F, G checks (HR, BP, CRT, AVPU, Temp, Fluid balance, BGL).",
+            "Positions patient upright (High Fowler's) to optimise lung expansion and keeps call bell in reach.",
+            "Verbalises clear clinical interpretation (acute infective exacerbation of COPD with bronchospasm and hypoxia) and escalates urgently.",
+            "Performs hand hygiene and documents assessment findings."
+          ],
+          modelScript: "“I am assessing the patient's general appearance, skin colour, ability to speak and level of consciousness. I would auscultate the lung fields systematically and compare both sides. I am concerned about acute respiratory distress and hypoxia (SpO₂ 86%, RR 28, bilateral wheeze) because of a likely infective COPD exacerbation. I would continue an ABCDE assessment and escalate immediately.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 8 Respiratory Script</h3>
+            <div class="script-box">
+              “I would auscultate the lung fields systematically and compare both sides. I am concerned about <input class="fill-input"> because <input class="fill-input">. I would continue an ABCDE assessment and escalate according to deterioration criteria.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "When auscultating a patient's chest in Station 8, how should you place your stethoscope?",
+          options: [
+            "Listen to one spot on the right side only over the patient's gown.",
+            "Auscultate systematically onto bare skin, comparing left and right sides at each level from apices to bases.",
+            "Only listen over the sternum.",
+            "Skip auscultation and only ask questions."
+          ],
+          correct: 1,
+          explanation: "Correct! Always compare side-to-side systematically so you can detect asymmetry, wheezes, crackles, or reduced air entry."
+        }
+      }
+    ]
+  },
+  {
+    module: "Module 3: High-Risk Clinical Procedures (Stations 3, 4, 5, 10)",
+    lessons: [
+      {
+        id: "m3-s3",
+        title: "Station 3: Blood Transfusion & Reaction Management",
+        type: "Station 3",
+        summary: "Verify blood compatibility, educate the patient, and execute STOP – ASSESS – ESCALATE during an acute transfusion reaction.",
+        notesHtml: `
+          <div class="card">
+            <h3>STOP – ASSESS – ESCALATE Protocol</h3>
+            <p>1. <strong>STOP</strong> the transfusion immediately and clamp the line. 2. <strong>ASSESS</strong> ABCs and repeat vital signs. 3. <strong>MAINTAIN IV ACCESS</strong> with a fresh 0.9% NaCl line (NEVER flush the blood in the old tubing into the patient). 4. <strong>ESCALATE</strong> to Medical Team, Senior Nurse, and Blood Bank. 5. <strong>INVESTIGATE</strong> (blood/urine samples, return blood bag & giving set, document).</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 3: Acute Febrile / Haemolytic Reaction 15 Minutes Into Transfusion",
+          patient: "Mrs Clara Oswald | DOB: 19/02/1975 (51 yrs) | UR: 774120 | Blood Group: O Positive",
+          setting: "Gynaecology Ward – Receiving 1 Unit Packed Red Blood Cells for symptomatic anaemia (Hb 68 g/L)",
+          doorPrompt: "You commenced a unit of Packed Red Blood Cells on Mrs Clara Oswald 15 minutes ago. Her baseline obs were: Temp 36.6°C, HR 78 bpm, RR 16/min, BP 122/74 mmHg, SpO₂ 98% on RA. You are entering to perform her 15-minute transfusion check.",
+          twist: "As you approach the bed, Mrs Oswald is shivering violently and says: 'Nurse, I suddenly feel freezing cold, my lower back is aching, and my chest feels tight and hard to breathe!' Repeat Obs: Temp 38.5°C, HR 124 bpm, RR 28/min, BP 88/52 mmHg, SpO₂ 90%.",
+          rubric: [
+            "Immediately recognises signs of an acute transfusion reaction (rigors, fever 38.5°C, loin/back pain, dyspnoea, hypotension 88/52, tachycardia 124).",
+            "1. STOP: Stops the infusion pump and clamps the blood giving set roller clamp immediately.",
+            "Reassures the patient and states they will remain with her and call for assistance.",
+            "2. ASSESS: Performs an immediate ABCDE assessment and repeats a full set of vital signs.",
+            "3. MAINTAIN IV ACCESS: Disconnects the blood giving set from the IV cannula hub without flushing the remaining blood into the patient.",
+            "Attaches a brand-new sterile giving set primed with 0.9% Sodium Chloride to maintain IV patency.",
+            "Re-checks the patient's ID wristband against the blood bag label and compatibility form at the bedside.",
+            "4. ESCALATE: Urgently notifies the Medical Team, Senior Nurse, and Blood Bank, and activates a MET / emergency response call due to hypotension/respiratory distress.",
+            "5. INVESTIGATE: States protocol for collecting post-transfusion blood and urine samples (checking for haemoglobinuria) and returning the clamped blood bag and giving set to Blood Bank.",
+            "Documents the reaction, observations, interventions, and notifications."
+          ],
+          modelScript: "“I am stopping the transfusion immediately and clamping the line. Mrs Oswald, I am concerned that you may be experiencing a reaction to the blood transfusion—I am staying right here with you. I will assess Airway, Breathing, and Circulation, repeat your observations, maintain IV access with a new 0.9% sodium chloride line WITHOUT flushing the remaining blood in the tubing into you, and urgently escalate to the medical team, senior nurse, and blood bank.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 3 Verbatim Reaction Script</h3>
+            <div class="script-box">
+              “I suspect an acute transfusion reaction. I would stop the transfusion immediately, assess ABCs and observations, maintain IV access according to protocol (without flushing the existing blood line) and urgently notify the appropriate medical and transfusion teams.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "What is the very first physical action you must take the moment a patient develops chills, back pain, or shortness of breath during a blood transfusion?",
+          options: [
+            "Speed up the transfusion to finish the bag quickly.",
+            "STOP the transfusion immediately and clamp the line.",
+            "Flush the remaining 50 mL of blood in the tubing into the patient.",
+            "Wait 30 minutes to see if the fever settles."
+          ],
+          correct: 1,
+          explanation: "Correct! Stopping the transfusion immediately limits the volume of incompatible/reactogenic blood infused."
+        }
+      },
+      {
+        id: "m3-s4",
+        title: "Station 4: Medication Administration",
+        type: "Station 4",
+        summary: "Execute the 10 Rights, 3 Safety Checks, allergy verification, and withhold unsafe or contraindicated medications.",
+        notesHtml: `
+          <div class="card">
+            <h3>Pre-Administration Safety & Withholding</h3>
+            <p>Check 3 identifiers, check allergies, perform the 3 medication checks, assess relevant clinical parameters (BP/HR before antihypertensives; BGL/meal before insulin; Pain/RR/Sedation before opioids; Pulse before digoxin), and <strong>withhold and clarify if anything is unsafe or unclear</strong>.</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 4: Contraindicated Antihypertensive / Bradycardia Safety Trap",
+          patient: "Mr Robert Vance | DOB: 10/09/1949 (77 yrs) | UR: 612098 | Allergies: Ibuprofen (GI bleed)",
+          setting: "Cardiology Ward – 08:00 Medication Round",
+          doorPrompt: "You are asked to administer Mr Robert Vance's 08:00 regular oral medication: Metoprolol 50 mg PO BD (prescribed for hypertension and atrial fibrillation). Review his chart and observations and proceed safely.",
+          twist: "When you check his morning vital signs chart prior to administration, you see his Blood Pressure is 88/54 mmHg, his Heart Rate is 46 bpm, and he tells you he felt light-headed when sitting up.",
+          rubric: [
+            "Completes SAFE entry: Hand hygiene, introduction, confirms 3 patient identifiers (Full Name, DOB 10/09/1949, UR 612098) against wristband and MAR.",
+            "Asks patient about allergies and verifies documented allergy (Ibuprofen) on MAR and red wristband.",
+            "Reviews the medication order on the MAR for validity (Right Patient, Drug, Dose, Route, Time, Indication, Prescriber signature).",
+            "Recognises that Metoprolol is a beta-blocker/antihypertensive requiring pre-administration assessment of Blood Pressure and Heart Rate.",
+            "Checks current BP (88/54 mmHg) and HR (46 bpm) and asks about dizziness/light-headedness.",
+            "CRITICAL SAFETY DECISION: Refuses to administer (withholds) the Metoprolol 50 mg due to symptomatic hypotension and bradycardia.",
+            "Explains clearly to the patient in plain language why the medication is being withheld right now.",
+            "Verbalises the withholding script to the examiner and states they will contact the prescribing medical officer urgently to review the patient and clarify the order.",
+            "Ensures patient safety (keeps patient resting in bed to prevent falls from postural hypotension, call bell in reach).",
+            "Documents the withheld dose using the appropriate code on the MAR and records clinical findings in the progress notes."
+          ],
+          modelScript: "“Mr Vance, your morning Metoprolol lowers both your blood pressure and heart rate. Because your blood pressure is currently low at 88/54 mmHg and your heart rate is slow at 46 beats per minute, it is not safe for me to give you this tablet right now. Examiner, I would withhold administration until I have contacted the prescriber and reviewed the patient's haemodynamic status.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 4 Withholding Script</h3>
+            <div class="script-box">
+              “I would withhold administration until I have clarified the order because I cannot safely administer a medication when the prescription or clinical parameters are unclear or outside safe limits.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "You are about to administer regular Ramipril (an antihypertensive) to a patient, and you notice their BP is 86/50 mmHg. What should you do?",
+          options: [
+            "Administer the tablet anyway because it is signed on the chart.",
+            "Withhold the medication, reassess the patient, document on the MAR, and escalate to the prescriber for clinical review.",
+            "Give half the tablet without asking anyone.",
+            "Throw the tablet in the bin and sign that it was given."
+          ],
+          correct: 1,
+          explanation: "Correct! Never administer an antihypertensive mechanically to a hypotensive patient."
+        }
+      },
+      {
+        id: "m3-s5",
+        title: "Station 5: IV Fluid Administration & Overload",
+        type: "Station 5",
+        summary: "Inspect the IV site, calculate mL/hr pump rates, and manage acute fluid overload.",
+        notesHtml: `
+          <div class="card">
+            <h3>IV Infusion Checks & Overload</h3>
+            <p>Check prescription, inspect cannula site (pain, redness, swelling, leakage, phlebitis, infiltration), calculate <code>mL/hr = Total Volume ÷ Hours</code>, and monitor for fluid overload (dyspnoea, falling SpO₂, crackles, oedema).</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 5: IV Fluid Rate Calculation & Acute Fluid Overload (APO)",
+          patient: "Mrs Helen Mirren | DOB: 05/04/1946 (80 yrs) | UR: 901244 | History: Congestive Heart Failure",
+          setting: "General Medical Ward",
+          doorPrompt: "Part A: Calculate the volumetric pump rate for an order of 1000 mL of 0.9% Sodium Chloride over 8 hours and inspect her right forearm IV cannula. Part B: Two hours into the infusion, Mrs Mirren calls out that she cannot catch her breath.",
+          twist: "On reassessment in Part B, she has a respiratory rate of 32/min, SpO₂ 88% on room air, moist bibasal crackles, ankle oedema, and a positive fluid balance of +1,800 mL.",
+          rubric: [
+            "Completes SAFE entry: Hand hygiene, introduction, 3 patient identifiers, allergy check, and consent.",
+            "Verifies the IV fluid prescription (patient, fluid type, volume, duration, additives, prescriber signature).",
+            "Inspects the IV cannula site for pain, redness, swelling, warmth, leakage, phlebitis, and infiltration, and confirms patency.",
+            "Calculates the infusion rate accurately aloud: 1000 mL ÷ 8 hours = 125 mL/hr (and states independent double-check with second RN).",
+            "Educates the patient to report any pain/swelling at the cannula site or any shortness of breath.",
+            "Part B Twist: Immediately recognises signs of acute fluid overload / acute pulmonary oedema (dyspnoea, SpO₂ 88%, crackles, history of CCF).",
+            "Pauses/stops or slows the IV fluid infusion immediately per protocol and stays with the patient.",
+            "Positions the patient upright (High Fowler's) and performs an urgent ABCDE assessment and repeat vital signs.",
+            "Reviews the 24-hour fluid balance chart and urine output.",
+            "Escalates urgently to the medical team / activates a MET call and documents findings."
+          ],
+          modelScript: "“The prescribed fluid is 1000 mL over 8 hours, so I will set the pump at 125 mL per hour. [During twist]: Mrs Mirren, I am concerned about your new shortness of breath and falling oxygen saturation. I am pausing your IV fluid infusion, sitting you upright, repeating your observations and lung assessment, and urgently escalating your deterioration to the medical team.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 5 Script</h3>
+            <div class="script-box">
+              “The prescribed fluid is <input class="fill-input sm" value="1000"> mL over <input class="fill-input sm" value="8"> hours. Therefore, I would set the infusion rate at <input class="fill-input sm" value="125"> mL per hour. If dyspnoea develops, I would reassess the patient immediately, review the fluid therapy and urgently escalate.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "Which cluster of signs strongly indicates IV fluid overload during an infusion?",
+          options: [
+            "Dry mouth and sunken eyes",
+            "Increasing dyspnoea, falling SpO₂, lung crackles, peripheral oedema, and rapid weight gain",
+            "Decreased blood pressure and dry skin",
+            "Normal respiratory rate of 14/min and SpO₂ 99%"
+          ],
+          correct: 1,
+          explanation: "Correct! Dyspnoea, desaturation, bibasal crackles, and oedema are classic hallmarks of intravascular fluid overload."
+        }
+      },
+      {
+        id: "m3-s10",
+        title: "Station 10: Wound Dressing & ANTT",
+        type: "Station 10",
+        summary: "Perform an aseptic wound dressing change using the WOUND mnemonic and escalate signs of surgical site infection.",
+        notesHtml: `
+          <div class="card">
+            <h3>WOUND Mnemonic & ANTT</h3>
+            <p><strong>W</strong>ound bed (Granulation, Slough, Necrotic) • <strong>O</strong>dour • <strong>U</strong>nderlying/surrounding skin (Redness, Warmth, Maceration, Swelling) • <strong>N</strong>ature of exudate (Serous, Sanguineous, Purulent) • <strong>D</strong>imensions (Length × Width × Depth cm). Protect Key-Parts and Key-Sites at all times.</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 10: Post-Op Abdominal Wound Dressing with Signs of Infection",
+          patient: "Mr Thomas Shelby | DOB: 12/07/1980 (46 yrs) | UR: 220194 | Allergies: Elastoplast tape",
+          setting: "Surgical Ward – Day 4 post Laparotomy",
+          doorPrompt: "Perform a wound assessment and aseptic dressing change on Mr Thomas Shelby's abdominal surgical wound according to his wound management plan.",
+          twist: "Before you start, he reports throbbing pain (6/10) at the wound site. When you remove the old dressing, you observe thick yellow-green purulent exudate, an offensive odour, 30% yellow slough in the wound bed, and spreading red, hot, swollen peri-wound skin.",
+          rubric: [
+            "Completes SAFE entry: Hand hygiene, introduction, 3 patient identifiers, and specifically checks allergies to dressings/adhesives (Elastoplast allergy noted!).",
+            "Assesses wound pain (6/10) BEFORE starting and states they would administer prescribed pre-procedure analgesia and wait for peak effect.",
+            "Cleans trolley, gathers equipment, positions patient privately, performs hand hygiene, and sets up the sterile ANTT field touching only outer corners.",
+            "Dons clean non-sterile gloves, removes old dressing gently, inspects exudate (thick yellow-green purulent), disposes into clinical waste, removes gloves, and performs hand hygiene.",
+            "Dons fresh gloves and verbalises systematic WOUND assessment: Wound bed (granulation vs 30% slough), Odour (offensive), Underlying/surrounding skin (red, hot, swollen), Nature of exudate (purulent), and Dimensions (L × W × Depth in cm).",
+            "Verbalises and maintains strict ANTT throughout, protecting Key-Parts (forceps tips, sterile gauze, inner dressing pad) and the Key-Site (wound).",
+            "Cleans wound using single strokes (one swab per wipe, cleanest to dirtiest) without re-contaminating cleaned areas.",
+            "Applies prescribed non-allergenic sterile dressing (avoiding Elastoplast) securely and comfortably.",
+            "Recognises clinical signs of acute surgical site infection (purulent discharge, erythema, heat, swelling, increasing pain, malodour) and states they would collect a wound swab and check temperature/vital signs.",
+            "Disposes of waste, performs hand hygiene, documents full WOUND assessment, and escalates urgently to the surgical team."
+          ],
+          modelScript: "“I am assessing the wound using the WOUND mnemonic: the wound bed shows 30% yellow slough, there is an offensive odour, the surrounding skin is red, warm and swollen, and there is moderate purulent exudate. I will clean the wound using Aseptic Non-Touch Technique protecting all key parts and key sites, apply a hypoallergenic dressing, and escalate these signs of wound infection to the medical team.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 10 ANTT Script</h3>
+            <div class="script-box">
+              “I will use Aseptic Non-Touch Technique and protect key parts and key sites throughout the procedure. I am concerned about possible wound infection/deterioration and would escalate these findings to the appropriate clinician.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "When removing the old soiled wound dressing in Station 10, what must you do before touching your sterile forceps or new sterile dressing?",
+          options: [
+            "Keep wearing the same dirty gloves used to peel off the old dressing.",
+            "Dispose of the old dressing, remove the dirty gloves, perform hand hygiene, and put on a fresh pair of gloves.",
+            "Wipe the dirty gloves on your uniform.",
+            "Touch the inner pad of the new dressing with bare unwashed hands."
+          ],
+          correct: 1,
+          explanation: "Correct! Removing contaminated gloves and performing hand hygiene before starting the aseptic phase prevents cross-contamination."
+        }
+      }
+    ]
+  },
+  {
+    module: "Module 4: Pain & Multi-Risk Management (Stations 7 & 9)",
+    lessons: [
+      {
+        id: "m4-s7",
+        title: "Station 7: Pain Assessment & Management (PQRST)",
+        type: "Station 7",
+        summary: "Perform a structured PQRST pain assessment, screen for acute abdominal/post-op red flags, intervene, and reassess.",
+        notesHtml: `
+          <div class="card">
+            <h3>PQRST & Multimodal Care</h3>
+            <p>Characterise pain using <strong>P</strong>rovocation/Palliation, <strong>Q</strong>uality, <strong>R</strong>egion/Radiation, <strong>S</strong>everity (0–10), and <strong>T</strong>iming. Check associated symptoms and vital signs, provide pharmacological and non-pharmacological care, and <strong>reassess</strong>.</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 7: Severe Post-Operative Abdominal Pain & Reassessment",
+          patient: "Ms Chloe Decker | DOB: 15/06/1991 (35 yrs) | UR: 310982 | Allergies: Codeine (Nausea/Vomiting)",
+          setting: "Surgical Ward – Day 1 post Laparoscopic Appendicectomy",
+          doorPrompt: "Ms Chloe Decker rings her bell stating her abdominal pain has worsened. Assess her pain systematically, initiate appropriate management, and explain your follow-up plan.",
+          twist: "Her pain is 7/10 sharp right lower quadrant incision pain, worse when coughing or moving, improved by lying still. She also feels slightly nauseous. Vital signs are stable (RR 18, SpO₂ 98%, HR 88, BP 124/76, Temp 36.9°C). Paracetamol 1g PO and Oxycodone 5mg PO PRN are prescribed.",
+          rubric: [
+            "Completes SAFE entry: Hand hygiene, introduction, 3 patient identifiers, and checks allergies (identifies Codeine reaction!).",
+            "Performs full PQRST assessment: Provocation/Palliation (worse coughing/moving, better resting), Quality (sharp), Region/Radiation (RLQ incision, no radiation), Severity (7/10 current), Timing (started 45 mins ago).",
+            "Screens for abdominal red flags and associated symptoms (nausea, vomiting, bowel/urinary changes, abdominal rigidity/distension).",
+            "Assesses functional impact (ability to deep breathe, cough, mobilise) and checks full set of vital signs + sedation score.",
+            "Reviews the medication chart safely, checks 10 Rights and 3 Checks, and administers prescribed analgesia alongside non-pharmacological comfort measures (repositioning, pillow splinting for coughing).",
+            "Educates the patient on the medication purpose and potential side effects (drowsiness/constipation with oxycodone).",
+            "CRITICAL STEP: Explicitly verbalises and performs post-intervention pain reassessment (30–60 mins post-oral analgesia) using the same 0–10 scale.",
+            "Monitors for adverse effects (respiratory depression, sedation, nausea).",
+            "States escalation plan if pain remains severe, worsens, or becomes disproportionate to expected post-op findings.",
+            "Documents PQRST findings, intervention, and reassessment score."
+          ],
+          modelScript: "“Earlier you rated your pain as 7/10. How would you rate it now? (Patient: 2/10). I would document the intervention and response, monitor for any opioid side effects such as sedation or respiratory depression, and escalate for clinical review if the pain worsens.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 7 Reassessment Script</h3>
+            <div class="script-box">
+              “Earlier, you rated your pain as <input class="fill-input sm">/10. How would you rate it now? (After: <input class="fill-input sm">/10). I would document the intervention and response, and escalate if the pain remains severe or worsens.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "Which of the following is considered a surgical 'Red Flag' during pain assessment that requires urgent medical escalation?",
+          options: [
+            "Mild 2/10 incisional soreness that settles after paracetamol.",
+            "Severe postoperative pain that is disproportionate to expected findings or accompanied by abdominal rigidity and hypotension.",
+            "A pain score of 0/10 at rest.",
+            "Asking for a second pillow."
+          ],
+          correct: 1,
+          explanation: "Correct! Disproportionate severe postoperative pain or acute abdominal rigidity requires urgent surgical review."
+        }
+      },
+      {
+        id: "m4-s9",
+        title: "Station 9: Risk Assessment (Falls, Pressure Injury, Delirium)",
+        type: "Station 9",
+        summary: "Execute targeted risk assessments and implement immediate bedside risk-reduction strategies.",
+        notesHtml: `
+          <div class="card">
+            <h3>ASSESS → REDUCE RISK → COMMUNICATE → DOCUMENT → REVIEW</h3>
+            <p>Screen systematically for <strong>Falls</strong> (history, gait, aids, meds, dizziness, vision, toileting, cognition), <strong>Pressure Injuries</strong> (skin, mobility, moisture, nutrition), <strong>Delirium</strong> (acute fluctuating confusion → PINCH ME causes), and <strong>Self-Harm</strong>.</p>
+          </div>
+        `,
+        scenario: {
+          title: "Case 9: High-Falls Risk Elderly Patient with Nocturia & Postural Dizziness",
+          patient: "Mr Walter Bishop | DOB: 28/01/1942 (84 yrs) | UR: 118940 | Allergies: Nil",
+          setting: "Geriatric Evaluation & Management (GEM) Ward",
+          doorPrompt: "Mr Walter Bishop was admitted following two falls at home last month. Complete a targeted falls and pressure injury risk assessment and implement immediate bedside prevention strategies.",
+          twist: "During your assessment, you notice his bed is at hip height, his walking frame is across the room out of reach, he is wearing loose socks without grip, his glasses are in his drawer, and he tells you he gets dizzy when standing up and often rushes to the toilet at night because of his frusemide (diuretic) tablet.",
+          rubric: [
+            "Completes SAFE entry: Hand hygiene, introduction, 3 patient identifiers, allergy check, and consent.",
+            "Assesses falls history: asks number of recent falls (2 in past month), circumstances, and any injuries sustained.",
+            "Assesses mobility and gait: asks about walking independence and walking aid used (4-wheeled frame).",
+            "Screens for postural dizziness/orthostatic hypotension (requests lying and standing BP) and reviews culprit medications (frusemide diuretic).",
+            "Assesses vision (ensures prescription glasses are worn) and toileting/continence needs (nocturia and rushing to bathroom).",
+            "Assesses cognition/orientation and screens for acute delirium or pressure injury risk factors (sacral/heel skin check, mobility, nutrition).",
+            "Identifies Mr Bishop as having a HIGH risk of falling and educates him clearly to press the call bell and wait for assistance before getting out of bed.",
+            "IMMEDIATE RISK REDUCTION: Lowers the bed to the lowest safe position and locks the brakes.",
+            "Places the call bell, walking frame, glasses, and personal belongings within easy reach, removes floor clutter, and replaces loose socks with non-slip footwear.",
+            "Documents the falls risk care plan and communicates high-risk status at nursing handover."
+          ],
+          modelScript: "“Based on my assessment, Mr Bishop has a high risk of falling due to his recent falls history, postural dizziness, diuretic therapy, and mobility needs. Mr Bishop, please use your call bell before getting out of bed so we can assist you. I am lowering your bed, locking the brakes, clearing floor hazards, putting your non-slip footwear on, and placing your call bell, glasses, and walking frame right within reach.”"
+        },
+        scriptHtml: `
+          <div class="card">
+            <h3>Station 9 Falls Prevention Script</h3>
+            <div class="script-box">
+              “Based on my assessment, Mr/Ms ___ has an increased risk of falling. Please use your call bell before getting out of bed so that we can assist you. I would ensure the bed is appropriately positioned, the environment is clear of hazards, the call bell and personal belongings are within reach, appropriate footwear is used and required mobility aids are accessible.”
+            </div>
+          </div>
+        `,
+        quiz: {
+          question: "In Station 9, what is the core OSCE principle regarding clinical risk assessment?",
+          options: [
+            "Simply ticking a risk score box on a form and walking away.",
+            "Identifying a risk is not enough—you must demonstrate: ASSESS → REDUCE RISK → COMMUNICATE → DOCUMENT → REVIEW.",
+            "Leaving the bed at maximum height.",
+            "Keeping the walking frame on the opposite side of the room."
+          ],
+          correct: 1,
+          explanation: "Correct! Examiners award marks when you actively modify the environment and educate the patient to reduce the identified risk immediately."
+        }
+      }
+    ]
+  }
+];
+
+const allLessons = [];
+courseData.forEach(m => m.lessons.forEach(l => allLessons.push(l)));
+
+let currentLessonIndex = 0;
+let completedIds = JSON.parse(localStorage.getItem("ngn_osce_v2_done") || "[]");
+
+function renderSidebar() {
+  const listEl = document.getElementById("curriculumList");
+  listEl.innerHTML = "";
+
+  courseData.forEach(mod => {
+    const modHeader = document.createElement("div");
+    modHeader.className = "module-header";
+    modHeader.textContent = mod.module;
+    listEl.appendChild(modHeader);
+
+    mod.lessons.forEach(lesson => {
+      const idx = allLessons.findIndex(x => x.id === lesson.id);
+      const isDone = completedIds.includes(lesson.id);
+      const item = document.createElement("div");
+      item.className = `lesson-item ${idx === currentLessonIndex ? "active" : ""} ${isDone ? "completed" : ""}`;
+      item.onclick = () => loadLesson(idx);
+      item.innerHTML = `
+        <div class="status-dot">✓</div>
+        <span>${lesson.title}</span>
+      `;
+      listEl.appendChild(item);
+    });
+  });
+
+  const pct = Math.round((completedIds.length / allLessons.length) * 100);
+  document.getElementById("progressBar").style.width = pct + "%";
+  document.getElementById("progressText").textContent = `${pct}% (${completedIds.length}/${allLessons.length})`;
+}
+
+function loadLesson(index) {
+  currentLessonIndex = index;
+  const lesson = allLessons[index];
+  const isDone = completedIds.includes(lesson.id);
+  const sc = lesson.scenario;
+  const stage = document.getElementById("lessonStage");
+
+  stage.innerHTML = `
+    <div class="video-banner">
+      <span class="brand-badge">${lesson.type} • NextGen Nurses</span>
+      <h1>${lesson.title}</h1>
+      <p>${lesson.summary}</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn scenario-tab-btn active" onclick="switchTab(event, 'tab-scenario')">🎯 Attempt Case Scenario (Simulated Exam)</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-notes')">📋 Clinical Guide & Checklist</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-scripts')">🗣️ Verbatim Scripts</button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-quiz')">✅ MCQ Quiz</button>
+    </div>
+
+    <!-- TAB 1: INTERACTIVE CASE SCENARIO SIMULATOR -->
+    <div id="tab-scenario" class="tab-panel active">
+      <div class="door-sheet">
+        <div class="door-sheet-header">
+          <span>🚪 Official OSCE Door Prompt — ${sc.title}</span>
+          <span>Reading Time: 2 Mins | Station Time: 8 Mins</span>
+        </div>
+        <p style="margin:4px 0;"><strong>Patient Identification:</strong> ${sc.patient}</p>
+        <p style="margin:4px 0;"><strong>Clinical Setting:</strong> ${sc.setting}</p>
+        <p style="margin:10px 0 0 0; font-size:15px;"><strong>Candidate Task:</strong> ${sc.doorPrompt}</p>
+      </div>
+
+      <div class="twist-box">
+        <h4>⚡ Mid-Station Clinical Twist (Examiner Cue):</h4>
+        <p style="margin:0; font-size:14.5px;">${sc.twist}</p>
+      </div>
+
+      <div class="card">
+        <h3>📝 Candidate Attempt Workspace (Write or Speak Your Sequence Aloud)</h3>
+        <p style="margin:0; font-size:13.5px; color:var(--text-muted);">Start the 8-minute timer above. Type out your step-by-step actions, clinical interpretation, and exact escalation script before revealing the examiner rubric:</p>
+        <textarea class="student-textarea" placeholder="1. SAFE Entry (Hand hygiene, 3 IDs, allergies)...&#10;2. Focused Assessment & Interpretation...&#10;3. Immediate Priority Action for the Clinical Twist...&#10;4. Verbatim Escalation / ISBAR Script..."></textarea>
+        <button class="reveal-btn" onclick="toggleRubric()">👁️ Reveal Examiner 10-Point Marking Key & Model Script</button>
+
+        <div id="markingKeyBox" class="marking-key">
+          <h3 style="color:var(--success);">✅ Official NextGen Nurses Examiner Marking Rubric (Check Your Score /10)</h3>
+          <ul class="checklist">
+            ${sc.rubric.map((item, idx) => `
+              <li>
+                <input type="checkbox" class="rubric-check" onchange="updateSelfScore()">
+                <span><strong>Point ${idx + 1}:</strong>${item}</span>
+              </li>
+            `).join("")}
+          </ul>
+          <div style="margin-top:12px; font-weight:800; color:var(--brand-primary);" id="selfScoreDisplay">
+            Your Self-Graded Station Score: 0 / 10 (Pass Mark: 8/10 with no critical safety breaches)
+          </div>
+          <div class="script-box" style="margin-top:14px;">
+            <strong>🏆 High-Scoring Verbatim Examiner Script to Memorise:</strong>
+            ${sc.modelScript}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CLINICAL GUIDE -->
+    <div id="tab-notes" class="tab-panel">
+      ${lesson.notesHtml}
+    </div>
+
+    <!-- TAB 3: SCRIPTS -->
+    <div id="tab-scripts" class="tab-panel">
+      ${lesson.scriptHtml}
+    </div>
+
+    <!-- TAB 4: QUIZ -->
+    <div id="tab-quiz" class="tab-panel">
+      <div class="card">
+        <h3>Clinical Reasoning Check</h3>
+        <p style="font-weight:600; font-size:15.5px;">${lesson.quiz.question}</p>
+        <div>
+          ${lesson.quiz.options.map((opt, i) => `
+            <div class="quiz-option" onclick="checkQuiz(${i},${lesson.quiz.correct})">
+              <strong>${String.fromCharCode(65 + i)}.</strong>${opt}
+            </div>
+          `).join("")}
+        </div>
+        <div id="quizFeedback" class="quiz-feedback"></div>
+      </div>
+    </div>
+
+    <div class="lesson-nav-footer">
+      <button class="nav-btn" onclick="prevLesson()" ${index === 0 ? "disabled style='opacity:0.4;cursor:not-allowed;'" : ""}>← Previous Station</button>
+      <button class="nav-btn complete-btn" onclick="completeAndContinue()">
+        ${isDone ? "✓ Station Completed — Next Station →" : "Mark Station Complete & Continue →"}
+      </button>
+    </div>
+  `;
+
+  renderSidebar();
+}
+
+function switchTab(evt, tabId) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  evt.currentTarget.classList.add("active");
+  document.getElementById(tabId).classList.add("active");
+}
+
+function toggleRubric() {
+  const box = document.getElementById("markingKeyBox");
+  box.style.display = box.style.display === "block" ? "none" : "block";
+}
+
+function updateSelfScore() {
+  const checks = document.querySelectorAll(".rubric-check:checked").length;
+  const el = document.getElementById("selfScoreDisplay");
+  el.textContent = `Your Self-Graded Station Score: ${checks} / 10 ${checks >= 8 ? "🎉 (PASS STANDARD ACHIEVED!)" : "(Keep practising until you hit 8+/10!)"}`;
+}
+
+function checkQuiz(selected, correct) {
+  const fb = document.getElementById("quizFeedback");
+  const lesson = allLessons[currentLessonIndex];
+  fb.style.display = "block";
+  if (selected === correct) {
+    fb.style.background = "#dcfce7";
+    fb.style.color = "#166534";
+    fb.textContent = "🎉 " + lesson.quiz.explanation;
+  } else {
+    fb.style.background = "#fee2e2";
+    fb.style.color = "#991b1b";
+    fb.textContent = "❌ Incorrect. Review the clinical priority and try again!";
+  }
+}
+
+function completeAndContinue() {
+  const currentId = allLessons[currentLessonIndex].id;
+  if (!completedIds.includes(currentId)) {
+    completedIds.push(currentId);
+    localStorage.setItem("ngn_osce_v2_done", JSON.stringify(completedIds));
+  }
+  if (currentLessonIndex < allLessons.length - 1) {
+    loadLesson(currentLessonIndex + 1);
+  } else {
+    renderSidebar();
+    alert("🎓 Congratulations! You have completed all 10 Case Scenarios in the NextGen Nurses OSCE Simulator!");
+  }
+}
+
+function prevLesson() {
+  if (currentLessonIndex > 0) loadLesson(currentLessonIndex - 1);
+}
+
+// ==================== DUAL OSCE TIMER (2M READ / 8M STATION) ====================
+let timeLeft = 480;
+let timerInterval = null;
+
+function updateTimerUI() {
+  const m = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const s = String(timeLeft % 60).padStart(2, "0");
+  document.getElementById("timerDisplay").textContent = `${m}:${s}`;
+}
+
+function toggleTimer() {
+  const btn = document.getElementById("timerToggleBtn");
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    btn.textContent = "▶ Resume";
+  } else {
+    btn.textContent = "⏸ Pause";
+    timerInterval = setInterval(() => {
+      if (timeLeft > 0) {
+        timeLeft--;
+        updateTimerUI();
+      } else {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        btn.textContent = "▶ Start";
+        alert("⏰ Time is up! Reveal the Examiner Marking Key below to grade your attempt.");
+      }
+    }, 1000);
+  }
+}
+
+function setTimerMode(seconds) {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timeLeft = seconds;
+  updateTimerUI();
+  document.getElementById("timerToggleBtn").textContent = "▶ Start";
+}
+
+loadLesson(0);
+</script>
+</body>
+</html>
